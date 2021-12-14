@@ -2,18 +2,15 @@
 from splinter import Browser
 from bs4 import BeautifulSoup as bs
 import time
-import pymongo 
-import requests
 import pandas as pd
 from flask_pymongo import PyMongo
 from flask import Flask, render_template, redirect
 from webdriver_manager.chrome import ChromeDriverManager
 
 #Set up Splinter
-def scrape():
+def scrape_all():
     executable_path = {'executable_path': ChromeDriverManager().install()}
-    browser = Browser('chrome', **executable_path, headless=False)
-    
+    browser = Browser('chrome', **executable_path, headless=True)   
 #Scrape 1
     url1 = 'https://redplanetscience.com/'
     browser.visit(url1)
@@ -34,11 +31,10 @@ def scrape():
     url3 = 'https://galaxyfacts-mars.com/'
     browser.visit(url3)
     mars_table = pd.read_html(url3)
-    table1= mars_table[1]
+    columns=['Description', 'Mars', 'Earth']
+    table1= mars_table[0]
     table2 = table1.to_html(index=False)
-    #table1.to_html("Table.html", index=False)
-
-    #table1.to_html("Table.html", index=False)
+    #table1.to_html("Table.html", index=False))
 
 #Scrape 5
     url4 = 'https://marshemispheres.com/'
@@ -59,22 +55,27 @@ def scrape():
         img_url = url4 + soup.find("img", {"class", "wide-image"})["src"]
         title = soup.find("h2", {"class", "title"}).text
     
-        images_title = {title:img_url}
+        images_title = {"title":title,
+                    "img_url":img_url}
     
         hemisphere.append(images_title)
 
 # Store Data in Dictionary
-    mars_data_dict={
-        "news1head":news1head,
-        "new1con":new1con,
-        "final_image":final_image,
-        "table2":table2,
-        "hemisphere":hemisphere
+    mars_data_dict = {
+        "news1head": news1head,
+        "new1con": new1con,
+        "final_image": final_image,
+        "table2": table2,
+        "hemisphere": hemisphere
     }
+    print("Data:", mars_data_dict)
 
+    
 # Close the browser after scraping 
     browser.quit()
 # Return Results 
     return mars_data_dict
 
+if __name__ == "__main__":
 
+    print(scrape_all())
